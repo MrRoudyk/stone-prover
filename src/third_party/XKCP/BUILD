@@ -7,10 +7,10 @@ config_setting(
 
 config_setting(
     name = "darwin_x86_64",
-    values = {
-        "cpu": "x86_64",
-        "os": "darwin",
-    },
+    constraint_values = [
+        "@platforms//os:darwin",
+        "@platforms//cpu:x86_64",
+    ],
 )
 
 cc_library(
