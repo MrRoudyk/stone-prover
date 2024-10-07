@@ -34,10 +34,11 @@ git_override(
   patch_strip = 1,
 )
 
-# LLVM 17 for most architectures
-llvm_17 = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+llvm_extension = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
 
-llvm_17.toolchain(
+# LLVM 17 for most architectures
+llvm_17 = llvm_extension.toolchain(
+    name = "llvm_17",
     compile_flags = {
         "": [
             "-DUSE_REGISTER_HINT",
@@ -88,9 +89,8 @@ llvm_17.toolchain(
 )
 
 # LLVM 15 specifically for darwin-x86_64
-llvm_15 = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
-
-llvm_15.toolchain(
+llvm_15 = llvm_extension.toolchain(
+    name = "llvm_15",
     compile_flags = {
         "darwin-x86_64": [
             "-DUSE_REGISTER_HINT",
@@ -136,11 +136,11 @@ llvm_15.toolchain(
 )
 
 # Correctly use repositories for each toolchain
-use_repo(llvm_17, "llvm_toolchain")
-use_repo(llvm_15, "llvm_toolchain_darwin_x86_64")
+use_repo(llvm_17, "llvm_toolchain_17")
+use_repo(llvm_15, "llvm_toolchain_15")
 
 # Register toolchains based on architecture
 register_toolchains(
-    "@llvm_toolchain//:all",
-    "@llvm_toolchain_darwin_x86_64//:all",
+    "@llvm_toolchain_17//:all",
+    "@llvm_toolchain_15//:all",
 )
