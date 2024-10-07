@@ -214,7 +214,13 @@
 
 .endm
 
+#ifdef __APPLE__
+/* Apple Mac OS */
+.section __TEXT,__text
+#else
+/* Othe UNIX systems */
 .section .text
+#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////
