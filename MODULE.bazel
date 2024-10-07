@@ -34,11 +34,9 @@ git_override(
   patch_strip = 1,
 )
 
-llvm_extension = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
 
-# LLVM 17 for most architectures
-llvm_17 = llvm_extension.toolchain(
-    name = "llvm_17",
+llvm.toolchain(
     compile_flags = {
         "": [
             "-DUSE_REGISTER_HINT",
@@ -73,8 +71,16 @@ llvm_17 = llvm_extension.toolchain(
             "-lstdc++",
             "-lm",
         ],
+        "darwin-x86_64": [
+            "-B/usr/bin",
+            "-lstdc++",
+            "-lm",
+        ],
     },
-    llvm_version = "17.0.6",
+    llvm_versions = {
+        "": "17.0.6",
+        "darwin-x86_64": "15.0.7",
+    },
     opt_compile_flags = {
         "": [
             "-g0",
@@ -88,59 +94,6 @@ llvm_17 = llvm_extension.toolchain(
     stdlib = {"": "stdc++"},
 )
 
-# LLVM 15 specifically for darwin-x86_64
-llvm_15 = llvm_extension.toolchain(
-    name = "llvm_15",
-    compile_flags = {
-        "darwin-x86_64": [
-            "-DUSE_REGISTER_HINT",
-            "-fno-omit-frame-pointer",
-            "-fno-strict-aliasing",
-            "-fPIC",
-            "-Isrc",
-            "-maes",
-            "-mpclmul",
-            "-Wall",
-            "-Wextra",
-            "-Wno-mismatched-tags",
-        ],
-    },
-    cxx_flags = {
-        "darwin-x86_64": [
-            "-std=c++17",
-            "-fconstexpr-steps=20000000",
-        ],
-    },
-    link_flags = {
-        "darwin-x86_64": [
-            "-fuse-ld=gold",
-            "-Wl,-no-as-needed",
-            "-Wl,-z,relro,-z,now",
-            "-B/usr/bin",
-            "-lstdc++",
-            "-lm",
-        ],
-    },
-    llvm_version = "15.0.7",
-    opt_compile_flags = {
-        "darwin-x86_64": [
-            "-g0",
-            "-O3",
-            "-D_FORTIFY_SOURCE=1",
-            "-DNDEBUG",
-            "-ffunction-sections",
-            "-fdata-sections",
-        ],
-    },
-    stdlib = {"darwin-x86_64": "stdc++"},
-)
+use_repo(llvm, "llvm_toolchain")
 
-# Correctly use repositories for each toolchain
-use_repo(llvm_17, "llvm_toolchain_17")
-use_repo(llvm_15, "llvm_toolchain_15")
-
-# Register toolchains based on architecture
-register_toolchains(
-    "@llvm_toolchain_17//:all",
-    "@llvm_toolchain_15//:all",
-)
+register_toolchains("@llvm_toolchain//:all")
